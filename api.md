@@ -1,3 +1,4 @@
+
 # api proposal
 
 ## objectives
@@ -50,16 +51,15 @@ enum blerrors {
 	* 0: unloaded successfully
 	* n < 0: did not unload successfully, call bloader_geterror
 
-```void* bloader_sym(blmodule* mod, const char* fnName)```
-* **NOT A USERMODE FUNCTION**
-* retrieve a pointer to an exported function from the module
-* possible return values:
-	* nullptr: could not find function
-	* n != nullptr: a pointer to the exported function
-
 ### module communication
 functions that will be available for modules to call
 
+```void* bloader_sym(const char* module, const char* fnName)```
+* retrieve a pointer to an exported function from the module
+* will look up into the global module table for said module..
+* possible return values:
+	* nullptr: could not find function
+	* n != nullptr: a pointer to the exported function
 ```
 void bloader_consolefunction_string(const char* nameSpace, const char* name, StringCallback callBack, const char* usage, int minArgs, int maxArgs)
 void bloader_consolefunction_bool(const char* nameSpace, const char* name, BoolCallback callBack, const char* usage, int minArgs, int maxArgs)
@@ -78,11 +78,33 @@ void bloader_consolevariable_bool(const char* name, bool* var)
 ```
 * expose a c++ variable to torquescript
 * simple enough
+
 ```
-int bloader_require(const char* module);
+const char* bloader_getvariable(const char* name)
+void bloader_setvariable(const char* name, const char* value)
+```
+* set a global torquescript  variable
+* **NOTE**: getVariable will never return a nullptr.
+```
+int bloader_require(const char* module)
 ```
 * will load a module into the global module table, and call it's initialization function
+* possible return values:
+	* 0: module loaded, ready to grab functions
+	* n < 0: error occured, use bloader_geterror to get more info on what happened
+```
+void bloader_printf(const char* format, ...)
+```
+* a wrapper around the game's internal printf function
+* truncate strings that are > 4096 characters long, and split them up into chunks 
+```
+void bloader_printf_error(const char* format, ...)
+void bloader_printf_warning(const char* format, ...)
+void bloader_printf_info(const char* format, ...)
+```
+* creature comfort
+* basically printf, except with special hex codes prepended to change the color of the text printed out to the console.
 
-
-
+### module documentation
+todo
 
